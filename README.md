@@ -1,5 +1,5 @@
 # Doodle.github.io
-Cool stuff 
+
 <!DOCTYPE html>
 <html lang="de">
 <head>

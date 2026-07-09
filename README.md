@@ -1,2 +1,1060 @@
 # Doodle.github.io
 Cool stuff 
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superhuman Ernährungsplan</title>
+<style>
+  :root {
+    --bg: #0a0e0d;
+    --surface: #111816;
+    --surface2: #162019;
+    --accent: #4ade80;
+    --accent2: #22d3ee;
+    --accent3: #f59e0b;
+    --text: #e8f5e9;
+    --muted: #6b8f74;
+    --danger: #f87171;
+    --border: #1e3025;
+    --font-display: 'Georgia', serif;
+    --font-body: system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; line-height: 1.6; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #0a1f13 0%, #0a0e0d 50%, #0d1a20 100%);
+    padding: 3rem 1.5rem 2rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(74,222,128,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: rgba(74,222,128,0.1);
+    border: 1px solid rgba(74,222,128,0.3);
+    color: var(--accent);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2rem;
+    margin-bottom: 1rem;
+  }
+  .hero h1 { font-family: var(--font-display); font-size: clamp(1.8rem,5vw,3rem); font-weight: 700; color: #fff; line-height: 1.15; margin-bottom: 0.5rem; }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub { color: var(--muted); font-size: 0.9rem; max-width: 480px; margin: 0 auto 1.5rem; }
+  .macro-bar { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-top: 1.5rem; }
+  .macro-pill { background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem; padding: 0.5rem 1.25rem; text-align: center; min-width: 90px; transition: border-color 0.3s; }
+  .macro-pill.updating { border-color: var(--accent); }
+  .macro-pill .val { font-size: 1.4rem; font-weight: 700; line-height: 1; transition: opacity 0.2s; }
+  .macro-pill .lbl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+  .kcal .val { color: var(--accent); }
+  .prot .val { color: var(--accent2); }
+  .carb .val { color: var(--accent3); }
+  .fat .val { color: #c084fc; }
+
+  /* SHUFFLE BAR */
+  .shuffle-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.875rem;
+    padding: 1rem 1.5rem;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .shuffle-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, rgba(74,222,128,0.15), rgba(34,211,238,0.1));
+    border: 1px solid rgba(74,222,128,0.4);
+    color: var(--accent);
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: var(--font-body);
+    padding: 0.6rem 1.25rem;
+    border-radius: 2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .shuffle-btn:hover { background: linear-gradient(135deg, rgba(74,222,128,0.25), rgba(34,211,238,0.18)); border-color: var(--accent); transform: translateY(-1px); }
+  .shuffle-btn:active { transform: translateY(0); }
+  .shuffle-btn svg { transition: transform 0.4s; }
+  .shuffle-btn.spinning svg { transform: rotate(360deg); }
+  .shuffle-info { font-size: 0.73rem; color: var(--muted); text-align: center; }
+  .shuffle-info strong { color: var(--text); }
+
+  /* TABS */
+  .tabs { display: flex; overflow-x: auto; background: var(--surface); border-bottom: 1px solid var(--border); -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn { flex-shrink: 0; background: none; border: none; color: var(--muted); font-size: 0.78rem; font-family: var(--font-body); padding: 0.85rem 1.1rem; cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s; white-space: nowrap; letter-spacing: 0.03em; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* CONTENT */
+  .content { display: none; padding: 1.5rem; max-width: 800px; margin: 0 auto; }
+  .content.active { display: block; }
+  .section-header { margin-bottom: 1.25rem; }
+  .section-header h2 { font-family: var(--font-display); font-size: 1.25rem; color: #fff; margin-bottom: 0.25rem; }
+  .section-header p { font-size: 0.82rem; color: var(--muted); }
+
+  /* MEAL CARDS */
+  .meal-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.875rem;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    transition: border-color 0.3s, opacity 0.3s;
+  }
+  .meal-card:hover { border-color: rgba(74,222,128,0.25); }
+  .meal-card.shuffling { opacity: 0.4; transform: scale(0.99); }
+  .meal-header { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; cursor: pointer; background: var(--surface2); }
+  .meal-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+  .meal-title-wrap { flex: 1; }
+  .meal-title-wrap h3 { font-size: 0.9rem; font-weight: 600; color: #fff; line-height: 1.2; }
+  .meal-title-wrap small { font-size: 0.72rem; color: var(--muted); }
+  .meal-slot-badge { font-size: 0.62rem; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2); color: var(--accent); padding: 0.1rem 0.45rem; border-radius: 1rem; margin-left: 0.3rem; }
+  .meal-kcal { font-size: 0.8rem; font-weight: 700; color: var(--accent); flex-shrink: 0; }
+  .meal-chevron { width: 16px; color: var(--muted); transition: transform 0.25s; flex-shrink: 0; }
+  .meal-card.open .meal-chevron { transform: rotate(180deg); }
+  .meal-body { display: none; padding: 1rem; border-top: 1px solid var(--border); }
+  .meal-card.open .meal-body { display: block; }
+
+  /* SLOT SHUFFLE BUTTON */
+  .slot-shuffle {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-family: var(--font-body);
+    padding: 0.25rem 0.6rem;
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .slot-shuffle:hover { border-color: var(--accent); color: var(--accent); }
+
+  .food-row { display: flex; align-items: flex-start; gap: 0.5rem; padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.82rem; }
+  .food-row:last-child { border-bottom: none; }
+  .food-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-top: 0.45rem; flex-shrink: 0; }
+  .food-name { flex: 1; color: var(--text); }
+  .food-detail { color: var(--muted); font-size: 0.75rem; text-align: right; line-height: 1.4; }
+  .benefit-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.75rem; }
+  .btag { background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); color: var(--accent); font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 2rem; text-transform: uppercase; letter-spacing: 0.07em; }
+  .btag.blue { background: rgba(34,211,238,0.08); border-color: rgba(34,211,238,0.2); color: var(--accent2); }
+  .btag.amber { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2); color: var(--accent3); }
+  .btag.purple { background: rgba(192,132,252,0.08); border-color: rgba(192,132,252,0.2); color: #c084fc; }
+  .meal-macros { display: flex; gap: 0.75rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); font-size: 0.75rem; }
+  .mm { color: var(--muted); }
+  .mm span { color: var(--text); font-weight: 600; }
+
+  /* VARIANT COUNTER */
+  .variant-counter { font-size: 0.7rem; color: var(--muted); margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 0.4rem; }
+  .vc-dots { display: flex; gap: 3px; }
+  .vc-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--border); }
+  .vc-dot.active { background: var(--accent); }
+
+  /* SUPPLEMENTS */
+  .supp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.875rem; margin-top: 0.5rem; }
+  .supp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 0.875rem; padding: 1rem; transition: border-color 0.2s; }
+  .supp-card:hover { border-color: rgba(74,222,128,0.25); }
+  .supp-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; }
+  .supp-emoji { font-size: 1.1rem; }
+  .supp-name { font-size: 0.88rem; font-weight: 600; color: #fff; }
+  .supp-dose { font-size: 0.72rem; color: var(--accent); font-weight: 700; }
+  .supp-when { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.5rem; }
+  .supp-benefits { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+  /* PRINCIPLES */
+  .principles-grid { display: grid; gap: 0.875rem; }
+  .principle-card { background: var(--surface); border: 1px solid var(--border); border-radius: 0.875rem; padding: 1rem 1.1rem; display: flex; gap: 0.875rem; align-items: flex-start; }
+  .p-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .p-title { font-size: 0.88rem; font-weight: 600; color: #fff; margin-bottom: 0.25rem; }
+  .p-body { font-size: 0.79rem; color: var(--muted); line-height: 1.55; }
+
+  /* GOALS */
+  .goals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.75rem; }
+  .goal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 0.875rem; padding: 0.875rem; font-size: 0.82rem; }
+  .goal-card .g-icon { font-size: 1.2rem; margin-bottom: 0.4rem; }
+  .goal-card .g-title { font-weight: 600; color: #fff; font-size: 0.85rem; margin-bottom: 0.3rem; }
+  .goal-card .g-text { color: var(--muted); line-height: 1.5; }
+
+  /* TIMELINE */
+  .timeline { position: relative; padding-left: 1.5rem; }
+  .timeline::before { content: ''; position: absolute; left: 5px; top: 8px; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--accent), transparent); }
+  .tl-item { position: relative; margin-bottom: 1.25rem; }
+  .tl-dot { position: absolute; left: -1.5rem; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); }
+  .tl-time { font-size: 0.72rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.2rem; }
+  .tl-content { font-size: 0.82rem; color: var(--text); }
+  .tl-content small { color: var(--muted); }
+
+  .disclaimer { background: rgba(248,113,113,0.05); border: 1px solid rgba(248,113,113,0.2); border-radius: 0.75rem; padding: 0.875rem 1rem; font-size: 0.75rem; color: var(--danger); line-height: 1.5; margin-bottom: 1.5rem; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(4rem);
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 0.78rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 2rem;
+    transition: transform 0.35s cubic-bezier(.175,.885,.32,1.275);
+    z-index: 999;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 480px) {
+    .hero { padding: 2rem 1rem 1.5rem; }
+    .macro-bar { gap: 0.75rem; }
+    .macro-pill { min-width: 70px; padding: 0.4rem 0.875rem; }
+    .content { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">⚡ Superhuman Protocol · 2300 kcal</div>
+  <h1>Lean Bulk &<br><span>Godmode</span> Ernährung</h1>
+  <p class="hero-sub">Muskelaufbau · Klare Haut · Maximale Gesundheit · Langlebigkeit</p>
+  <div class="macro-bar">
+    <div class="macro-pill kcal"><div class="val" id="total-kcal">2300</div><div class="lbl">Kalorien</div></div>
+    <div class="macro-pill prot"><div class="val" id="total-prot">185g</div><div class="lbl">Protein</div></div>
+    <div class="macro-pill carb"><div class="val" id="total-carb">240g</div><div class="lbl">Kohlenhydrate</div></div>
+    <div class="macro-pill fat"><div class="val" id="total-fat">65g</div><div class="lbl">Fett</div></div>
+  </div>
+</div>
+
+<!-- SHUFFLE BAR -->
+<div class="shuffle-bar">
+  <button class="shuffle-btn" id="shuffleAllBtn" onclick="shuffleAll()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+    </svg>
+    Ganzen Tag shufflen
+  </button>
+  <div class="shuffle-info">
+    Jede Mahlzeit hat <strong>10 Alternativen</strong> · Makros bleiben immer im Zielbereich
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('meals',event)">🍽 Mahlzeiten</button>
+  <button class="tab-btn" onclick="showTab('supplements',event)">💊 Supplements</button>
+  <button class="tab-btn" onclick="showTab('timing',event)">⏱ Timing</button>
+  <button class="tab-btn" onclick="showTab('goals',event)">🎯 Ziele</button>
+  <button class="tab-btn" onclick="showTab('principles',event)">⚗️ Prinzipien</button>
+</div>
+
+<!-- MAHLZEITEN TAB -->
+<div id="tab-meals" class="content active">
+  <div class="section-header">
+    <h2>Tagesplan · 5 Mahlzeiten</h2>
+    <p>Shuffle einzelne Slots oder den ganzen Tag — Makros bleiben immer im Ziel</p>
+  </div>
+  <div id="meal-slots"></div>
+</div>
+
+<!-- SUPPLEMENTS -->
+<div id="tab-supplements" class="content">
+  <div class="section-header"><h2>Supplement Stack</h2><p>Evidenzbasiert · auf deine Ziele abgestimmt</p></div>
+  <div class="disclaimer">⚠️ Supplements ersetzen keine ärztliche Beratung. Lass vorher deine Blutwerte checken (Vitamin D, Zink, Ferritin, Testosteron).</div>
+  <div class="supp-grid">
+    <div class="supp-card"><div class="supp-header"><div class="supp-emoji">🟡</div><div><div class="supp-name">Vitamin D3 + K2</div><div class="supp-dose">3.000–5.000 IE D3 + 100µg K2</div></div></div><div class="supp-when">⏱ Morgens zum Frühstück</div><div class="supp-benefits">Testosteron ↑, Immunsystem, Knochen, Stimmung, Anti-Krebs, Schlaf. Das #1-Defizit in Deutschland.</div></div>
+    <div class="supp-card"><div class="supp-header"><div class="supp-emoji">🔵</div><div><div class="supp-name">Omega-3 Fischöl</div><div class="supp-dose">2–3g EPA+DHA täglich</div></div></div><div class="supp-when">⏱ Mit fettreicher Mahlzeit</div><div class="supp-benefits">Anti-Entzündung, Herz, Gehirn & Fokus, Haut, Gelenke, Stimmung, Cortisol ↓, Testosteron-Support.</div></div>
+    <div class="supp-card"><div class="supp-header"><div class="supp-emoji">⚡</div><div><div class="supp-name">Kreatin Monohydrat</div><div class="supp-dose">5g täglich</div></div></div><div class="supp-when">⏱ Pre- oder Post-Workout</div><div class="supp-benefits">Kraft & Ausdauer ↑, Muskelmasse ↑, Gehirnleistung ↑, anti-aging. Sicherster Bodybuilding-Supplement.</div></div>
+    <div class="supp-card"><div class="supp-header"><div class="supp-emoji">🟤</div><div><div class="supp-name">Magnesium Glycinat</div><div class="supp-dose">300–400mg täglich</div></div></div><div class="supp-when">⏱ Abends vor dem Schlafen</div><div class="supp-benefits">Schlaf ↑↑, Cortisol ↓, Muskelrelaxation, Testosteron-Support, Insulinsensitivität, Stimmung.</div></div>
+    <div class="supp-card"><div class="supp-header"><div class="supp-emoji">🌿</div><div><div class="supp-name">Ashwagandha (KSM-66)</div><div class="supp-dose">300–600mg täglich</div></div></div><div class="supp-when">⏱ Morgens oder Abends</div><div class="supp-benefits">Cortisol ↓ 30%, Testosteron ↑, Stress & Angst ↓, Schlaf ↑, Ausdauerleistung ↑, Fertilität ↑.</div></div>
+    <div class="supp-card"><div class="supp-header"><div class="supp-emoji">🍊</div><div><div class="supp-name">Vitamin C (gepuffert)</div><div class="supp-dose">500–1000mg täglich</div></div></div><div class="supp-when">⏱ Morgens zum Frühstück</div><div class="supp-benefits">Kollagen-Synthese, Immunsystem, Antioxidans, Eisenaufnahme ↑, Cortisol ↓, Wundheilung.</div></div>
+    <div class="supp-card"><div class="supp-header"><div class="supp-emoji">🌊</div><div><div class="supp-name">Zink Bisglycinat</div><div class="supp-dose">15–25mg täglich</div></div></div><div class="supp-when">⏱ Abends (nicht mit Eisen)</div><div class="supp-benefits">Testosteron-Synthese ↑, Immunsystem, Hautgesundheit, Haarwachstum, Spermaqualität, Wundheilung.</div></div>
+    <div class="supp-card"><div class="supp-header"><div class="supp-emoji">🔴</div><div><div class="supp-name">Vitamin B-Komplex (Methyl)</div><div class="supp-dose">1 Kapsel täglich</div></div></div><div class="supp-when">⏱ Morgens</div><div class="supp-benefits">Energie ↑, Nervensystem, B12, B6 für Testosteron & Stimmung, Folat für DNA-Schutz, Biotin für Haut/Haar/Nägel.</div></div>
+    <div class="supp-card"><div class="supp-header"><div class="supp-emoji">🧫</div><div><div class="supp-name">Probiotikum (Multi-Strain)</div><div class="supp-dose">10–50 Mrd. KBE täglich</div></div></div><div class="supp-when">⏱ Morgens nüchtern</div><div class="supp-benefits">Darmgesundheit, Immunsystem, Haut-Gut-Achse (weniger Akne!), Stimmung, Nährstoffaufnahme ↑.</div></div>
+    <div class="supp-card"><div class="supp-header"><div class="supp-emoji">💎</div><div><div class="supp-name">Collagen-Peptide (Typ I & III)</div><div class="supp-dose">10g täglich + Vitamin C</div></div></div><div class="supp-when">⏱ Morgens oder nach Training</div><div class="supp-benefits">Haut-Elastizität ↑, Gelenke, Haare & Nägel, Knochen, Anti-Aging.</div></div>
+    <div class="supp-card"><div class="supp-header"><div class="supp-emoji">🌱</div><div><div class="supp-name">Rhodiola Rosea</div><div class="supp-dose">200–400mg täglich</div></div></div><div class="supp-when">⏱ Morgens / vor Training</div><div class="supp-benefits">Mentale Energie & Fokus ↑, Fatigue ↓, Cortisol-Regulation, sportliche Performance ↑, Burn-out-Prävention.</div></div>
+  </div>
+</div>
+
+<!-- TIMING -->
+<div id="tab-timing" class="content">
+  <div class="section-header"><h2>Tages-Timing</h2><p>Wann du was nimmst, macht 20–30% des Unterschieds</p></div>
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">06:30 Uhr</div><div class="tl-content">Aufwachen: 500ml Wasser + Prise Meersalz + Zitronensaft<br><small>Hydration, Elektrolyte, Verdauung aktivieren</small></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">07:00 Uhr</div><div class="tl-content">Frühstück + Morgen-Supplements<br><small>Vitamin D3+K2, Vitamin C, B-Komplex, Collagen, Probiotikum, Ashwagandha, Omega-3</small></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">10:30 Uhr</div><div class="tl-content">Mid-Morning Snack<br><small>Blutzucker stabil halten, Gehirn mit gesunden Fetten versorgen</small></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">13:00 Uhr</div><div class="tl-content">Mittagessen (Hauptmahlzeit)<br><small>Größte Mahlzeit tagsüber – Insulinsensitivität am höchsten</small></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">16:00 Uhr</div><div class="tl-content">Pre-Workout: Shake + Kreatin<br><small>30–60 Min vor Training. Rhodiola optional für Fokus.</small></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">17:00–18:30 Uhr</div><div class="tl-content">Training<br><small>Krafttraining 3–5x/Woche für maximalen Muskelaufbau</small></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">19:30 Uhr</div><div class="tl-content">Abendessen (proteinreich)<br><small>Fisch, Fleisch oder Hülsenfrüchte + Salat + gesunde Fette</small></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">21:00 Uhr</div><div class="tl-content">Abend-Supplements: Magnesium Glycinat + Zink<br><small>Schlaf ↑, Recovery ↑, Testosteron ↑</small></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">21:30 Uhr</div><div class="tl-content">Optional: Kasein-Snack<br><small>Langsames Protein für nächtlichen Muskelschutz</small></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">22:30 Uhr</div><div class="tl-content">Schlafen gehen (7–9h)<br><small>Schlaf ist der mächtigste Anabolika überhaupt.</small></div></div>
+  </div>
+</div>
+
+<!-- GOALS -->
+<div id="tab-goals" class="content">
+  <div class="section-header"><h2>Wie der Plan deine Ziele trifft</h2><p>Jede Mahlzeiten-Alternative ist auf diese Ziele ausgerichtet</p></div>
+  <div class="goals-grid">
+    <div class="goal-card"><div class="g-icon">💪</div><div class="g-title">Muskelaufbau & Lean Bulk</div><div class="g-text">185g+ Protein täglich, Kreatin, Whey Post-Workout, Kohlenhydrat-Timing ums Training.</div></div>
+    <div class="goal-card"><div class="g-icon">✨</div><div class="g-title">Klare Haut & kein Akne</div><div class="g-text">Omega-3, Zink, Vitamin A aus Eiern, Probiotikum (Darm-Haut-Achse), stabiler Blutzucker.</div></div>
+    <div class="goal-card"><div class="g-icon">🧠</div><div class="g-title">Fokus & mentale Klarheit</div><div class="g-text">DHA aus Fisch, Walnüsse, grüner Tee, Kreatin, Rhodiola, B-Vitamine.</div></div>
+    <div class="goal-card"><div class="g-icon">🔥</div><div class="g-title">Testosteron & Hormone</div><div class="g-text">Zink, Vitamin D3, Omega-3, Ashwagandha, Cholesterin aus Eiern, gesunde Fette.</div></div>
+    <div class="goal-card"><div class="g-icon">😴</div><div class="g-title">Schlaf & Recovery</div><div class="g-text">Magnesium Glycinat, Ashwagandha, Kasein-Protein abends, kein Zucker spät.</div></div>
+    <div class="goal-card"><div class="g-icon">🌿</div><div class="g-title">Stress & Cortisol ↓</div><div class="g-text">Ashwagandha (–30% Cortisol), Rhodiola, Magnesium, Omega-3, regelmäßige Mahlzeiten.</div></div>
+    <div class="goal-card"><div class="g-icon">🫀</div><div class="g-title">Herz & Prävention</div><div class="g-text">Omega-3, Olivenöl, Walnüsse, Knoblauch, Beeren, Ballaststoffe aus Hafer & Gemüse.</div></div>
+    <div class="goal-card"><div class="g-icon">💀</div><div class="g-title">Knochen & Gelenke</div><div class="g-text">Vitamin D3+K2, Collagen, Omega-3, Kalzium aus Milchprodukten, Selen aus Paranüssen.</div></div>
+    <div class="goal-card"><div class="g-icon">🦠</div><div class="g-title">Darm & Verdauung</div><div class="g-text">Probiotikum, Joghurt, Kefir, Ballaststoffe, fermentierte Lebensmittel.</div></div>
+    <div class="goal-card"><div class="g-icon">⏳</div><div class="g-title">Langlebigkeit & Anti-Aging</div><div class="g-text">Sulforaphan (Brokkoli), Anthocyane (Beeren), Omega-3, Kreatin, Collagen.</div></div>
+    <div class="goal-card"><div class="g-icon">💇</div><div class="g-title">Haare & Nägel</div><div class="g-text">Biotin, Zink, Selen, Collagen, ausreichend Protein, Eisen mit Vitamin C.</div></div>
+    <div class="goal-card"><div class="g-icon">👁️</div><div class="g-title">Augen & Sehkraft</div><div class="g-text">Lutein aus Spinat, Beta-Carotin aus Süßkartoffel, Omega-3, Vitamin C & E.</div></div>
+  </div>
+</div>
+
+<!-- PRINCIPLES -->
+<div id="tab-principles" class="content">
+  <div class="section-header"><h2>Die Regeln dahinter</h2><p>Diese Prinzipien machen 80% des Erfolgs aus</p></div>
+  <div class="principles-grid">
+    <div class="principle-card"><div class="p-icon">💧</div><div><div class="p-title">3–4 Liter Wasser täglich</div><div class="p-body">Hydration ist der am meisten unterschätzte Faktor für Energie, Haut, Leistung und Testosteron. 2% Dehydration = 10% weniger Kraft. Starte mit 500ml nüchtern.</div></div></div>
+    <div class="principle-card"><div class="p-icon">🚫</div><div><div class="p-title">Was du weglässt, zählt genauso</div><div class="p-body">Verarbeiteter Zucker zerstört Testosteron, triggert Akne und crasht den Blutzucker. Pflanzöle (Sonnenblumen, Soja) fördern Entzündungen. Alkohol senkt Testosteron direkt.</div></div></div>
+    <div class="principle-card"><div class="p-icon">🌈</div><div><div class="p-title">Farbenvielfalt = Nährstoffvielfalt</div><div class="p-body">Jede Farbe steht für andere Phytonährstoffe: Blau (Anthocyane), Orange (Beta-Carotin), Grün (Sulforaphan), Rot (Lycopin). Täglich 5+ Farben anstreben.</div></div></div>
+    <div class="principle-card"><div class="p-icon">📊</div><div><div class="p-title">Blutwerte kennen & tracken</div><div class="p-body">Lass jährlich messen: Vitamin D, Zink, Ferritin, Testosteron (gesamt + frei), TSH, Cortisol, Blutbild, CRP. Ohne Messung kein echtes Optimieren.</div></div></div>
+    <div class="principle-card"><div class="p-icon">🔄</div><div><div class="p-title">Konsistenz schlägt Perfektion</div><div class="p-body">80/20-Regel: 80% sauber halten, 20% Flexibilität. Ein schlechter Tag macht nichts kaputt – drei schlechte Wochen schon. Fortschritt > Perfektion.</div></div></div>
+    <div class="principle-card"><div class="p-icon">😴</div><div><div class="p-title">Schlaf ist der stärkste Booster</div><div class="p-body">7–9h Schlaf produziert mehr Wachstumshormon und Testosteron als jeder Supplement-Stack. Unter 6h sinkt Testosteron um 10–15% bereits nach einer Woche.</div></div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// MEAL DATABASE — 10 options per slot
+// Each option has: name, icon, time, kcal, p(rotein), c(arbs), f(at), items[], tags[]
+// Macro targets per slot keep daily total ~2300 kcal / 185g P / 240g C / 65g F
+// ─────────────────────────────────────────────
+
+const MEALS = {
+  // SLOT 1 — FRÜHSTÜCK ~550–580 kcal, ~38–42g P, ~55–65g C, ~16–20g F
+  slot1: {
+    label: "Frühstück", time: "07:00 Uhr", color: "rgba(74,222,128,0.1)",
+    options: [
+      {
+        name: "Power-Rührei & Haferbrei", icon: "🌅", kcal: 560, p:40, c:58, f:18,
+        items: [
+          ["4 Freiland-Eier (Rührei)", "240 kcal · 28g P · Zink, Vit. A"],
+          ["80g Haferflocken + 200ml Mandelmilch", "290 kcal · 10g P · 52g C"],
+          ["100g Blaubeeren", "57 kcal · Anthocyane"],
+          ["1 TL Chiasamen", "Omega-3, Ballaststoffe"],
+          ["200ml grüner Tee", "L-Theanin · Fokus"]
+        ],
+        tags: [["Testosteron ↑","g"],["Fokus","b"],["Haut & Haar","a"],["Muskelaufbau","g"]]
+      },
+      {
+        name: "Protein-Pancakes", icon: "🥞", kcal: 555, p:42, c:60, f:15,
+        items: [
+          ["3 Eier + 30g Whey Protein + 60g Hafermehl", "380 kcal · 42g P"],
+          ["100g Magerquark als Topping", "55 kcal · 12g P"],
+          ["80g Erdbeeren + 1 TL Honig", "70 kcal · Vit. C"],
+          ["200ml grüner Tee", "L-Theanin"]
+        ],
+        tags: [["Muskelaufbau","g"],["Saubere Energie","b"],["Haut","a"],["Darm","p"]]
+      },
+      {
+        name: "Overnight Oats & Eier", icon: "🌾", kcal: 560, p:39, c:62, f:17,
+        items: [
+          ["90g Haferflocken (über Nacht in 200ml Kefir)", "380 kcal · 14g P"],
+          ["3 hartgekochte Eier", "215 kcal · 19g P · Cholin"],
+          ["1 Banane (in Scheiben)", "90 kcal · Kalium, B6"],
+          ["1 TL Leinsamen", "Omega-3, Ballaststoffe"]
+        ],
+        tags: [["Darmgesundheit","b"],["Energie","g"],["Testosteron","g"],["Haut","a"]]
+      },
+      {
+        name: "Griechischer Joghurt-Bowl", icon: "🫙", kcal: 545, p:41, c:56, f:17,
+        items: [
+          ["300g griechischer Joghurt (2%)", "215 kcal · 30g P"],
+          ["40g Walnüsse", "260 kcal · Omega-3"],
+          ["80g Haferflocken (roh eingeweicht)", "290 kcal · 10g P"],
+          ["80g Heidelbeeren", "Anthocyane"],
+          ["1 TL Honig + Zimt", "Blutzucker-Regulation"]
+        ],
+        tags: [["Darm","b"],["Gehirn","b"],["Haut","a"],["Testosteron","g"]]
+      },
+      {
+        name: "Vollkornbrot & Rührei", icon: "🍳", kcal: 550, p:38, c:55, f:20,
+        items: [
+          ["3 Eier + 1 Ei-Weiß (Rührei mit Spinat)", "210 kcal · 27g P"],
+          ["3 Scheiben Vollkornbrot (Roggen)", "200 kcal · 9g P · 36g C"],
+          ["½ Avocado", "120 kcal · gesunde Fette"],
+          ["5 Cherrytomaten + Kräuter", "Lycopin, Vit. C"],
+          ["1 Kiwi", "Vit. C, K1"]
+        ],
+        tags: [["Haut","a"],["Herz","b"],["Testosteron","g"],["Fokus","b"]]
+      },
+      {
+        name: "Lachs-Scramble & Kartoffeln", icon: "🐟", kcal: 570, p:43, c:50, f:21,
+        items: [
+          ["80g Räucherlachs + 3 Eier (Scramble)", "330 kcal · 38g P · Omega-3"],
+          ["200g Süßkartoffel-Würfel (gebraten)", "175 kcal · Beta-Carotin"],
+          ["Handvoll Spinat dazu", "Eisen, Folat"],
+          ["200ml grüner Tee", "L-Theanin"]
+        ],
+        tags: [["Omega-3","b"],["Haut","a"],["Muskelaufbau","g"],["Augen","p"]]
+      },
+      {
+        name: "Magerquark-Bowl & Granola", icon: "🥣", kcal: 545, p:40, c:60, f:15,
+        items: [
+          ["250g Magerquark", "200 kcal · 30g P"],
+          ["50g selbstgemachtes Granola (Hafer + Kürbiskerne)", "220 kcal · 8g P"],
+          ["100g gemischte Beeren", "Antioxidantien"],
+          ["1 EL Flohsamenschalen", "Ballaststoffe, Darm"],
+          ["200ml schwarzer Kaffee", "Fokus, Antioxidantien"]
+        ],
+        tags: [["Darm","b"],["Muskelaufbau","g"],["Haut","a"],["Energie","g"]]
+      },
+      {
+        name: "Tofu-Scramble & Hafer", icon: "🌱", kcal: 540, p:38, c:58, f:18,
+        items: [
+          ["200g fester Tofu (gewürzt, angebraten)", "190 kcal · 21g P"],
+          ["80g Haferflocken mit Mandelmilch", "290 kcal · 10g P"],
+          ["Kurkuma + schwarzer Pfeffer (Bioverfügbarkeit ↑)", "Anti-Entzündung"],
+          ["100g Blaubeeren", "Anthocyane, Antioxidantien"],
+          ["1 TL Leinöl", "Omega-3"]
+        ],
+        tags: [["Anti-Entzündung","a"],["Haut","a"],["Darm","b"],["Langlebigkeit","p"]]
+      },
+      {
+        name: "Eierweiß-Omelette & Vollkornbrei", icon: "🍽", kcal: 555, p:44, c:56, f:16,
+        items: [
+          ["6 Eiweiß + 2 Vollei (Omelette mit Paprika + Zwiebel)", "250 kcal · 36g P"],
+          ["70g Buchweizen (gekocht)", "215 kcal · 8g P · vollständige AS"],
+          ["100g Magerquark als Beilage", "68 kcal · 12g P"],
+          ["1 Orange (ganz)", "Vit. C, Flavonoide"],
+          ["Frische Kräuter nach Wahl", "Mikronährstoffe"]
+        ],
+        tags: [["Muskelaufbau","g"],["Haut","a"],["Immunsystem","b"],["Testosteron","g"]]
+      },
+      {
+        name: "Chia-Pudding & Spiegelei", icon: "🫐", kcal: 550, p:39, c:57, f:20,
+        items: [
+          ["50g Chiasamen + 250ml Kokosmilch-light (über Nacht)", "310 kcal · 10g P · Omega-3"],
+          ["3 Spiegeleier (in Kokosöl)", "220 kcal · 19g P · Vit. D"],
+          ["80g Mango-Stücke", "Beta-Carotin, Vit. C"],
+          ["1 TL Kakaopulver (roh) obendrauf", "Flavonoide, Magnesium"],
+          ["200ml grüner Tee", "L-Theanin"]
+        ],
+        tags: [["Omega-3","b"],["Haut","a"],["Gehirn","b"],["Testosteron","g"]]
+      }
+    ]
+  },
+
+  // SLOT 2 — MID-MORNING SNACK ~320–370 kcal, ~22–28g P, ~18–25g C, ~16–22g F
+  slot2: {
+    label: "Snack (10:30)", time: "10:30 Uhr", color: "rgba(34,211,238,0.1)",
+    options: [
+      {
+        name: "Joghurt, Walnüsse & Kiwi", icon: "🥗", kcal: 350, p:25, c:20, f:20,
+        items: [
+          ["200g griechischer Joghurt (0%)", "120 kcal · 20g P"],
+          ["30g Walnüsse", "196 kcal · Omega-3"],
+          ["1 Kiwi", "Vit. C, K1"],
+          ["1 Prise Zimt", "Blutzucker-Regulation"]
+        ],
+        tags: [["Darm","b"],["Gehirn","b"],["Immunsystem","g"],["Stress ↓","p"]]
+      },
+      {
+        name: "Hüttenkäse & Mandeln", icon: "🧀", kcal: 340, p:28, c:16, f:18,
+        items: [
+          ["200g Hüttenkäse", "140 kcal · 24g P"],
+          ["25g Mandeln", "150 kcal · Vit. E, Magnesium"],
+          ["1 Apfel", "~80 kcal · Ballaststoffe"],
+          ["1 Prise Zimt & Muskat", "anti-diabetisch"]
+        ],
+        tags: [["Muskelaufbau","g"],["Haut","a"],["Gehirn","b"],["Knochen","p"]]
+      },
+      {
+        name: "Edamame & Hummus", icon: "🫛", kcal: 345, p:22, c:28, f:16,
+        items: [
+          ["150g Edamame (gegart)", "190 kcal · 17g P · Isoflavone"],
+          ["80g Hummus (Kichererbse)", "155 kcal · 5g P"],
+          ["Gemüsesticks: Paprika, Gurke, Karotte", "Vit. C, Beta-Carotin"]
+        ],
+        tags: [["Darm","b"],["Haut","a"],["Energie","g"],["Herz","b"]]
+      },
+      {
+        name: "Proteinshake & Nüsse", icon: "🥤", kcal: 330, p:32, c:18, f:14,
+        items: [
+          ["30g Whey-Protein + 300ml Mandelmilch", "170 kcal · 28g P"],
+          ["20g Cashews", "115 kcal · Zink, Magnesium"],
+          ["1 kleine Banane", "75 kcal · Kalium, B6"]
+        ],
+        tags: [["Muskelaufbau","g"],["Energie","g"],["Testosteron","g"],["Fokus","b"]]
+      },
+      {
+        name: "Magerquark & Beeren-Kompott", icon: "🫙", kcal: 335, p:26, c:25, f:12,
+        items: [
+          ["250g Magerquark", "190 kcal · 28g P"],
+          ["150g gemischte Beeren (warm oder kalt)", "75 kcal · Antioxidantien"],
+          ["1 EL Kürbiskerne", "70 kcal · Zink"],
+          ["Spritzer Zitronensaft", "Vit. C"]
+        ],
+        tags: [["Haut","a"],["Muskelaufbau","g"],["Antioxidantien","p"],["Testosteron","g"]]
+      },
+      {
+        name: "Hartgekochte Eier & Avocado", icon: "🥑", kcal: 360, p:22, c:10, f:26,
+        items: [
+          ["3 hartgekochte Eier", "225 kcal · 19g P · Cholin"],
+          ["½ Avocado", "120 kcal · gesunde Fette"],
+          ["Prise Meersalz + Paprikapulver", "Elektrolyte"],
+          ["5 Cherrytomaten", "Lycopin"]
+        ],
+        tags: [["Testosteron","g"],["Gehirn","b"],["Haut","a"],["Energie","g"]]
+      },
+      {
+        name: "Kefir-Smoothie & Nüsse", icon: "🥛", kcal: 340, p:24, c:28, f:14,
+        items: [
+          ["300ml Kefir", "150 kcal · 10g P · Probiotika"],
+          ["1 Banane + Handvoll Spinat + 1 TL Ingwer", "110 kcal · Kalium, Eisen"],
+          ["20g Hanfsamen (einrühren)", "110 kcal · 6g P · Omega-3"],
+          ["25g Mandeln", "150 kcal · Vit. E"]
+        ],
+        tags: [["Darm","b"],["Anti-Entzündung","a"],["Haut","a"],["Energie","g"]]
+      },
+      {
+        name: "Thunfisch-Vollkornbrot", icon: "🥪", kcal: 350, p:30, c:28, f:12,
+        items: [
+          ["1 Dose Thunfisch (in Wasser, abgetropft)", "130 kcal · 26g P · Omega-3"],
+          ["2 Scheiben Vollkornbrot", "140 kcal · 6g P"],
+          ["1 TL Olivenöl + Zitrone", "Polyphenole"],
+          ["Salatblätter, Tomate", "Vit. K, Lycopin"]
+        ],
+        tags: [["Muskelaufbau","g"],["Omega-3","b"],["Herz","b"],["Haut","a"]]
+      },
+      {
+        name: "Reiswaffeln & Mandelmus", icon: "🌰", kcal: 330, p:22, c:30, f:16,
+        items: [
+          ["4 Reiswaffeln (Vollkorn)", "120 kcal"],
+          ["2 EL Mandelmus (naturell)", "190 kcal · Vit. E, Magnesium"],
+          ["200g Magerquark", "135 kcal · 20g P"],
+          ["1 TL Honig", "Energie, Antioxidantien"]
+        ],
+        tags: [["Energie","g"],["Muskelaufbau","g"],["Haut","a"],["Knochen","p"]]
+      },
+      {
+        name: "Cottage Cheese & Paranüsse", icon: "🥜", kcal: 345, p:26, c:18, f:18,
+        items: [
+          ["200g Cottage Cheese", "140 kcal · 22g P"],
+          ["5 Paranüsse", "55 kcal · Selen ↑↑ (Schilddrüse!)"],
+          ["1 Birne", "80 kcal · Ballaststoffe, Quercetin"],
+          ["1 TL Leinöl", "Omega-3, ALA"]
+        ],
+        tags: [["Schilddrüse","a"],["Testosteron","g"],["Haut","a"],["Darm","b"]]
+      }
+    ]
+  },
+
+  // SLOT 3 — MITTAGESSEN ~620–660 kcal, ~52–60g P, ~50–60g C, ~16–20g F
+  slot3: {
+    label: "Mittagessen", time: "13:00 Uhr", color: "rgba(245,158,11,0.1)",
+    options: [
+      {
+        name: "Hähnchen, Süßkartoffel & Brokkoli", icon: "🍗", kcal: 640, p:55, c:55, f:18,
+        items: [
+          ["180g Hähnchenbrustfilet (gegrillt)", "285 kcal · 53g P"],
+          ["150g Süßkartoffel (gebacken)", "135 kcal · Beta-Carotin"],
+          ["150g Brokkoli (gedämpft)", "Sulforaphan, Vit. C"],
+          ["½ Avocado", "120 kcal · gesunde Fette"],
+          ["1 EL Olivenöl + Knoblauch", "Polyphenole, Allicin"],
+          ["1 EL Kürbiskerne", "Zink"]
+        ],
+        tags: [["Muskelaufbau","g"],["Anti-Entzündung","a"],["Herz","b"],["Testosteron","g"]]
+      },
+      {
+        name: "Lachs-Bowl mit Quinoa", icon: "🐠", kcal: 650, p:52, c:52, f:22,
+        items: [
+          ["170g Lachsfilet (gebacken)", "355 kcal · 37g P · Omega-3"],
+          ["120g Quinoa (gekocht)", "145 kcal · 5g P · vollständige AS"],
+          ["Großer Spinat-Salat", "Folat, Eisen, Lutein"],
+          ["½ Avocado + Zitronendressing", "120 kcal"],
+          ["5 Paranüsse", "Selen"]
+        ],
+        tags: [["Omega-3","b"],["Haut","a"],["Gehirn","b"],["Langlebigkeit","p"]]
+      },
+      {
+        name: "Rindfleisch & Vollkornreis", icon: "🥩", kcal: 645, p:55, c:55, f:18,
+        items: [
+          ["160g Rinderhüfte (mager, angebraten)", "290 kcal · 42g P · Zink, Eisen"],
+          ["120g Vollkornreis (gekocht)", "170 kcal · 4g P"],
+          ["200g gedünstetes Gemüse (Paprika, Zucchini, Zwiebel)", "Vit. C, Antioxidantien"],
+          ["1 EL Olivenöl + Rosmarin", "Polyphenole"],
+          ["1 EL Kürbiskerne", "Zink, Magnesium"]
+        ],
+        tags: [["Muskelaufbau","g"],["Testosteron","g"],["Eisen","a"],["Energie","g"]]
+      },
+      {
+        name: "Truthahn-Wrap", icon: "🌯", kcal: 625, p:54, c:58, f:16,
+        items: [
+          ["180g Putenbrustfilet (gewürzt, gebraten)", "250 kcal · 50g P"],
+          ["2 Vollkorn-Wraps", "200 kcal · 8g P"],
+          ["Rucola, Tomate, Gurke, Paprika", "Vit. C, K, Beta-Carotin"],
+          ["2 EL Hummus", "75 kcal · Ballaststoffe"],
+          ["Spritzer Zitrone + Kurkuma", "Anti-Entzündung"]
+        ],
+        tags: [["Muskelaufbau","g"],["Darm","b"],["Immunsystem","g"],["Haut","a"]]
+      },
+      {
+        name: "Linsen-Dal & Hähnchen", icon: "🍛", kcal: 640, p:53, c:62, f:14,
+        items: [
+          ["150g rote Linsen (gekocht)", "185 kcal · 13g P · Eisen, Folat"],
+          ["150g Hähnchenbrustfilet", "235 kcal · 44g P"],
+          ["Kokosmilch, Kurkuma, Ingwer, Kreuzkümmel", "Anti-Entzündung"],
+          ["80g Basmati-Reis (gedämpft)", "100 kcal"],
+          ["Spinat eingerührt", "Eisen, Lutein"]
+        ],
+        tags: [["Anti-Entzündung","a"],["Darm","b"],["Muskelaufbau","g"],["Herz","b"]]
+      },
+      {
+        name: "Thunfisch-Pasta mit Gemüse", icon: "🍝", kcal: 635, p:54, c:60, f:14,
+        items: [
+          ["130g Vollkorn-Pasta (trocken)", "460 kcal · 17g P"],
+          ["1 Dose Thunfisch (Wasser)", "130 kcal · 26g P"],
+          ["150g Kirschtomaten + Knoblauch + Basilikum", "Lycopin, Antioxidantien"],
+          ["1 EL Olivenöl", "Polyphenole"],
+          ["Handvoll Rucola (roh darüber)", "Nitrate, Vit. K"]
+        ],
+        tags: [["Herz","b"],["Omega-3","b"],["Energie","g"],["Muskelaufbau","g"]]
+      },
+      {
+        name: "Tofu & Reisnudeln (asiatisch)", icon: "🍜", kcal: 620, p:40, c:65, f:16,
+        items: [
+          ["200g Tofu (fest, gebraten)", "180 kcal · 22g P"],
+          ["120g Reisnudeln (trocken)", "280 kcal"],
+          ["Pak Choi, Brokkoli, Karotten, Ingwer", "Sulforaphan, Beta-Carotin"],
+          ["2 EL Tamari (glutenfreie Sojasauce)", "Aminosäuren"],
+          ["1 TL Sesamöl + Sesamsamen", "Phytosterole"]
+        ],
+        tags: [["Anti-Entzündung","a"],["Darm","b"],["Knochen","p"],["Langlebigkeit","p"]]
+      },
+      {
+        name: "Lachs-Burger & Süßkartoffel-Pommes", icon: "🍔", kcal: 655, p:50, c:55, f:22,
+        items: [
+          ["180g Lachsfilet (zu Patty geformt, gebraten)", "355 kcal · 37g P"],
+          ["1 Vollkorn-Burgerbrötchen", "140 kcal"],
+          ["150g Süßkartoffel-Pommes (im Ofen)", "130 kcal"],
+          ["Spinat, Tomate, Avocado-Scheibe", "Nährstoffdichte"],
+          ["Senf + Zitrone (Dressing)", "0 kcal"]
+        ],
+        tags: [["Omega-3","b"],["Haut","a"],["Energie","g"],["Muskelaufbau","g"]]
+      },
+      {
+        name: "Hähnchen-Gemüse-Pfanne & Hirse", icon: "🥘", kcal: 630, p:52, c:58, f:15,
+        items: [
+          ["180g Hähnchenbrustfilet (gewürzt)", "285 kcal · 53g P"],
+          ["100g Hirse (gekocht)", "150 kcal · Eisen, Magnesium"],
+          ["Paprika, Zucchini, Erbsen (je 80g)", "Vit. C, Ballaststoffe"],
+          ["Kurkuma + Cayenne + Knoblauch", "Anti-Entzündung, Allicin"],
+          ["1 EL Olivenöl", "Polyphenole"]
+        ],
+        tags: [["Muskelaufbau","g"],["Anti-Entzündung","a"],["Energie","g"],["Haut","a"]]
+      },
+      {
+        name: "Kichererbsen-Bowl & Feta", icon: "🥙", kcal: 630, p:38, c:68, f:18,
+        items: [
+          ["200g Kichererbsen (gekocht)", "260 kcal · 14g P · Ballaststoffe"],
+          ["80g Feta (Schafskäse)", "200 kcal · 11g P · Kalzium"],
+          ["Großer Salat: Spinat, Gurke, Tomate, Rote Bete", "Antioxidantien"],
+          ["Tahini-Dressing (1 EL Sesampaste + Zitrone)", "Kalzium, gesunde Fette"],
+          ["2 EL Olivenöl", "Polyphenole"]
+        ],
+        tags: [["Darm","b"],["Knochen","p"],["Herz","b"],["Langlebigkeit","p"]]
+      }
+    ]
+  },
+
+  // SLOT 4 — PRE/POST WORKOUT ~320–350 kcal, ~26–30g P, ~35–45g C, ~7–10g F
+  slot4: {
+    label: "Pre/Post-Workout", time: "16:30 Uhr", color: "rgba(192,132,252,0.1)",
+    options: [
+      {
+        name: "Whey-Shake, Banane & Erdnussbutter", icon: "⚡", kcal: 330, p:28, c:38, f:8,
+        items: [
+          ["30g Whey-Protein + 300ml Wasser", "120 kcal · 25g P"],
+          ["1 Banane", "90 kcal · 23g C · B6"],
+          ["1 EL Erdnussbutter (naturell)", "95 kcal · gesunde Fette"],
+          ["5g Kreatin (im Shake)", "Performance ↑"]
+        ],
+        tags: [["Schnelle Energie","p"],["Muskel-Synthese","g"],["Regeneration","b"],["Stimmung","a"]]
+      },
+      {
+        name: "Reiskuchen & Quark-Dip", icon: "🍚", kcal: 325, p:27, c:40, f:7,
+        items: [
+          ["4 Reiskuchen (Vollkorn)", "140 kcal"],
+          ["200g Magerquark", "135 kcal · 20g P"],
+          ["1 EL Honig", "Schnelle Glukose"],
+          ["1 Handvoll Beeren", "Antioxidantien"],
+          ["5g Kreatin", "Kraft ↑"]
+        ],
+        tags: [["Energie","g"],["Muskelaufbau","g"],["Regeneration","b"],["Haut","a"]]
+      },
+      {
+        name: "Eiersandwich & Apfel", icon: "🥚", kcal: 340, p:26, c:38, f:10,
+        items: [
+          ["3 hartgekochte Eier", "225 kcal · 19g P"],
+          ["2 Scheiben Vollkornbrot", "140 kcal · 6g P"],
+          ["1 Apfel", "80 kcal · Ballaststoffe"],
+          ["Senf (fettarm)", "0 kcal · Antioxidantien"]
+        ],
+        tags: [["Ausdauerleistung","g"],["Energie","g"],["Muskelaufbau","g"],["Darm","b"]]
+      },
+      {
+        name: "Kasein-Pudding & Beeren", icon: "🍮", kcal: 320, p:30, c:35, f:7,
+        items: [
+          ["30g Kasein-Protein + 200ml Wasser zu Pudding", "120 kcal · 25g P"],
+          ["80g Haferflocken (roh, eingerührt)", "290 kcal · 10g P"],
+          ["100g Himbeeren", "54 kcal · Quercetin"],
+          ["5g Kreatin", "Kraft ↑"]
+        ],
+        tags: [["Langanhaltende Energie","p"],["Muskelaufbau","g"],["Regeneration","b"],["Haut","a"]]
+      },
+      {
+        name: "Bananenshake mit Haferflocken", icon: "🍌", kcal: 335, p:28, c:42, f:7,
+        items: [
+          ["30g Whey + 1 Banane + 40g Haferflocken + 250ml Mandelmilch (alles blenden)", "330 kcal · 28g P"],
+          ["1 TL Zimt", "Blutzucker-Regulation"],
+          ["5g Kreatin", "Performance ↑"]
+        ],
+        tags: [["Energie","g"],["Muskelaufbau","g"],["Regeneration","b"],["Fokus","b"]]
+      },
+      {
+        name: "Joghurt & Granola mit Honig", icon: "🍯", kcal: 330, p:26, c:38, f:9,
+        items: [
+          ["250g griechischer Joghurt (2%)", "145 kcal · 17g P"],
+          ["40g Hafer-Granola (Vollkorn)", "160 kcal · 4g P"],
+          ["1 EL Honig", "68 kcal · schnelle Glukose"],
+          ["30g Walnüsse (gehackt)", "Omega-3"],
+          ["5g Kreatin", "Kraft ↑"]
+        ],
+        tags: [["Energie","g"],["Darm","b"],["Muskelaufbau","g"],["Regeneration","b"]]
+      },
+      {
+        name: "Thunfisch & Vollkorncracker", icon: "🐟", kcal: 325, p:30, c:32, f:8,
+        items: [
+          ["1 Dose Thunfisch (in Wasser)", "130 kcal · 26g P · Omega-3"],
+          ["6 Vollkorncracker", "120 kcal"],
+          ["1 EL Avocado-Aufstrich", "50 kcal"],
+          ["1 Orange", "Vit. C, schnelle Energie"],
+          ["5g Kreatin", "Kraft ↑"]
+        ],
+        tags: [["Omega-3","b"],["Muskelaufbau","g"],["Energie","g"],["Haut","a"]]
+      },
+      {
+        name: "Süßkartoffel-Purée & Proteinshake", icon: "🍠", kcal: 345, p:29, c:42, f:7,
+        items: [
+          ["200g Süßkartoffel (gedämpft, zerdrückt)", "175 kcal · Beta-Carotin"],
+          ["30g Whey-Protein + 250ml Wasser", "120 kcal · 25g P"],
+          ["1 TL Kokosöl", "MCT-Fette"],
+          ["Prise Zimt + Meersalz", "Blutzucker"],
+          ["5g Kreatin", "Performance ↑"]
+        ],
+        tags: [["Langzeitenergie","a"],["Muskelaufbau","g"],["Haut","a"],["Augen","p"]]
+      },
+      {
+        name: "Protein-Müsliriegel & Milch", icon: "🍫", kcal: 330, p:27, c:38, f:8,
+        items: [
+          ["1 selbstgemachter Protein-Riegel (Hafer+Whey+Honig+Kakao)", "230 kcal · 20g P"],
+          ["300ml Vollmilch (3,5%)", "193 kcal · 10g P · Kalzium"],
+          ["5g Kreatin (in Milch aufgelöst)", "Kraft ↑"]
+        ],
+        tags: [["Energie","g"],["Muskelaufbau","g"],["Knochen","p"],["Regeneration","b"]]
+      },
+      {
+        name: "Edamame & Proteinshake", icon: "🫛", kcal: 330, p:32, c:30, f:9,
+        items: [
+          ["150g Edamame (gekocht, gesalzen)", "190 kcal · 17g P · Isoflavone"],
+          ["25g Whey + 200ml Mandelmilch", "140 kcal · 22g P"],
+          ["1 kleine Banane", "75 kcal · B6, Kalium"],
+          ["5g Kreatin", "Kraft ↑"]
+        ],
+        tags: [["Muskelaufbau","g"],["Energie","g"],["Herz","b"],["Haut","a"]]
+      }
+    ]
+  },
+
+  // SLOT 5 — ABENDESSEN ~400–440 kcal, ~35–42g P, ~22–30g C, ~14–18g F
+  slot5: {
+    label: "Abendessen", time: "19:30 Uhr", color: "rgba(99,102,241,0.1)",
+    options: [
+      {
+        name: "Lachs, Quinoa & Spinatsalat", icon: "🌙", kcal: 420, p:38, c:28, f:16,
+        items: [
+          ["150g Lachs (gebacken)", "260 kcal · 33g P · Omega-3"],
+          ["100g Quinoa (gekocht)", "120 kcal · 5g P"],
+          ["Spinat, Rucola, Tomate, Gurke", "Folat, Lutein, Lycopin"],
+          ["5 Paranüsse", "Selen (Schilddrüse)"],
+          ["1 TL Leinöl als Dressing", "Omega-3, ALA"]
+        ],
+        tags: [["Omega-3","b"],["Schlaf","p"],["Selen","a"],["Anti-Aging","p"]]
+      },
+      {
+        name: "Hähnchenkeule & Süßkartoffel", icon: "🍗", kcal: 430, p:40, c:30, f:16,
+        items: [
+          ["200g Hähnchenkeule (ohne Haut, gebraten)", "280 kcal · 35g P · Zink"],
+          ["150g Süßkartoffel (gegrillt)", "135 kcal · Beta-Carotin"],
+          ["150g gedämpfter Brokkoli", "Sulforaphan, Vit. C, K"],
+          ["1 EL Olivenöl + Zitrone + Knoblauch", "Polyphenole, Allicin"]
+        ],
+        tags: [["Testosteron","g"],["Schlaf","p"],["Anti-Entzündung","a"],["Muskelaufbau","g"]]
+      },
+      {
+        name: "Kabeljau & Gemüse-Ratatouille", icon: "🐟", kcal: 400, p:42, c:24, f:12,
+        items: [
+          ["200g Kabeljaufilet (gedämpft)", "180 kcal · 40g P · Jod"],
+          ["Ratatouille: Zucchini, Aubergine, Tomate, Paprika", "150 kcal · Antioxidantien"],
+          ["80g Vollkorncouscous", "120 kcal"],
+          ["1 EL Olivenöl + Kräuter (Thymian, Rosmarin)", "Polyphenole"]
+        ],
+        tags: [["Jod","b"],["Schilddrüse","a"],["Herz","b"],["Langlebigkeit","p"]]
+      },
+      {
+        name: "Rindfleisch-Gemüse-Eintopf", icon: "🍲", kcal: 435, p:42, c:28, f:16,
+        items: [
+          ["150g Rinderhüfte (gewürfelt, geschmort)", "245 kcal · 38g P · Zink, Eisen"],
+          ["Möhren, Sellerie, Zwiebeln, Tomaten", "Beta-Carotin, Antioxidantien"],
+          ["100g Hülsenfrüchte (Linsen/weiße Bohnen)", "120 kcal · Ballaststoffe"],
+          ["Rosmarin, Knoblauch, Lorbeer", "Anti-Entzündung"]
+        ],
+        tags: [["Eisen","a"],["Testosteron","g"],["Darm","b"],["Schlaf","p"]]
+      },
+      {
+        name: "Sardinen & Ofengemüse", icon: "🐟", kcal: 410, p:38, c:22, f:18,
+        items: [
+          ["1 Dose Sardinen in Olivenöl (abgetropft)", "200 kcal · 26g P · Omega-3, Kalzium"],
+          ["Ofengemüse: Brokkoli, Karotten, rote Zwiebeln", "150 kcal · Sulforaphan"],
+          ["2 Scheiben Vollkornbrot (geröstet)", "140 kcal"],
+          ["Zitronensaft + Petersilie", "Vit. C"]
+        ],
+        tags: [["Omega-3","b"],["Knochen","p"],["Herz","b"],["Haut","a"]]
+      },
+      {
+        name: "Garnelen-Stir-Fry & Reisnudeln", icon: "🦐", kcal: 415, p:36, c:38, f:13,
+        items: [
+          ["200g Garnelen (gebraten)", "210 kcal · 38g P · Jod, Selen"],
+          ["80g Reisnudeln (trocken)", "280 kcal"],
+          ["Pak Choi, Brokkoli, Frühlingszwiebeln, Ingwer", "Sulforaphan, Antioxidantien"],
+          ["1 EL Tamari + 1 TL Sesamöl", "Umami, gesunde Fette"]
+        ],
+        tags: [["Jod","b"],["Schilddrüse","a"],["Schlaf","p"],["Haut","a"]]
+      },
+      {
+        name: "Truthahn-Hackpfanne & Zucchini-Nudeln", icon: "🫑", kcal: 420, p:45, c:20, f:16,
+        items: [
+          ["200g Putenhackfleisch (angebraten)", "290 kcal · 45g P"],
+          ["2 große Zucchini (als Spiralnudeln)", "66 kcal · Vit. C"],
+          ["Tomaten-Sauce (Knoblauch, Tomate, Basilikum)", "80 kcal · Lycopin"],
+          ["1 EL Olivenöl", "Polyphenole"],
+          ["2 EL geriebener Parmesan", "Kalzium"]
+        ],
+        tags: [["Muskelaufbau","g"],["Haut","a"],["Schlaf","p"],["Anti-Entzündung","a"]]
+      },
+      {
+        name: "Hüttenkäse & Gemüse-Frittata", icon: "🥚", kcal: 400, p:40, c:18, f:18,
+        items: [
+          ["4 Eier + 100g Hüttenkäse (im Ofen gebacken)", "360 kcal · 38g P"],
+          ["Spinat, Paprika, Feta, Oliven darin", "Kalzium, Eisen, Vit. C"],
+          ["Großer grüner Salat daneben", "Vit. K, Ballaststoffe"],
+          ["1 EL Olivenöl", "Polyphenole"]
+        ],
+        tags: [["Testosteron","g"],["Haut","a"],["Knochen","p"],["Schlaf","p"]]
+      },
+      {
+        name: "Forelle & Spargel", icon: "🐡", kcal: 410, p:42, c:20, f:17,
+        items: [
+          ["180g Forellenfilet (gebacken)", "250 kcal · 37g P · Omega-3, Vit. D"],
+          ["250g Spargel (gegrillt)", "55 kcal · Präbiotika, Folat"],
+          ["100g Kartoffeln (gekocht)", "85 kcal · Kalium"],
+          ["1 EL Mandeln + Zitronenbutter", "Vit. E, gesunde Fette"]
+        ],
+        tags: [["Omega-3","b"],["Darm","b"],["Schlaf","p"],["Langlebigkeit","p"]]
+      },
+      {
+        name: "Hähnchenbrust & Blumenkohlreis", icon: "🥦", kcal: 405, p:44, c:22, f:14,
+        items: [
+          ["200g Hähnchenbrustfilet (mariniert, gegrillt)", "315 kcal · 58g P"],
+          ["300g Blumenkohl (gerieben, in der Pfanne angebraten)", "90 kcal · Sulforaphan"],
+          ["Erbsen + Karotten", "Ballaststoffe, Beta-Carotin"],
+          ["Kurkuma + Kreuzkümmel + Koriander", "Anti-Entzündung"],
+          ["1 EL Olivenöl", "Polyphenole"]
+        ],
+        tags: [["Muskelaufbau","g"],["Anti-Entzündung","a"],["Schlaf","p"],["Krebsprävention","p"]]
+      }
+    ]
+  }
+};
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+const currentIndices = { slot1: 0, slot2: 0, slot3: 0, slot4: 0, slot5: 0 };
+
+function pickRandom(slot, exclude) {
+  const len = MEALS[slot].options.length;
+  let idx;
+  do { idx = Math.floor(Math.random() * len); } while (idx === exclude && len > 1);
+  return idx;
+}
+
+function updateMacroBar() {
+  let kcal = 0, p = 0, c = 0, f = 0;
+  Object.keys(currentIndices).forEach(slot => {
+    const m = MEALS[slot].options[currentIndices[slot]];
+    kcal += m.kcal; p += m.p; c += m.c; f += m.f;
+  });
+  document.getElementById('total-kcal').textContent = kcal;
+  document.getElementById('total-prot').textContent = p + 'g';
+  document.getElementById('total-carb').textContent = c + 'g';
+  document.getElementById('total-fat').textContent = f + 'g';
+}
+
+function renderMeal(slot) {
+  const slotData = MEALS[slot];
+  const idx = currentIndices[slot];
+  const m = slotData.options[idx];
+  const total = slotData.options.length;
+
+  const tagColors = { g: '', b: 'blue', a: 'amber', p: 'purple' };
+
+  const foodRows = m.items.map(([name, detail]) => `
+    <div class="food-row">
+      <div class="food-dot"></div>
+      <div class="food-name">${name}</div>
+      <div class="food-detail">${detail}</div>
+    </div>`).join('');
+
+  const tagHtml = m.tags.map(([label, color]) =>
+    `<span class="btag ${tagColors[color] || ''}">${label}</span>`).join('');
+
+  const dotsHtml = Array.from({length: total}, (_, i) =>
+    `<div class="vc-dot ${i === idx ? 'active' : ''}"></div>`).join('');
+
+  return `
+    <div class="meal-card" id="card-${slot}">
+      <div class="meal-header" onclick="toggleMeal('${slot}')">
+        <div class="meal-icon" style="background:${slotData.color}">${m.icon}</div>
+        <div class="meal-title-wrap">
+          <h3>${m.name} <span class="meal-slot-badge">${slotData.label}</span></h3>
+          <small>${slotData.time}</small>
+        </div>
+        <button class="slot-shuffle" onclick="event.stopPropagation(); shuffleSlot('${slot}')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+          Alt.
+        </button>
+        <div class="meal-kcal">~${m.kcal} kcal</div>
+        <svg class="meal-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="meal-body">
+        ${foodRows}
+        <div class="benefit-tags">${tagHtml}</div>
+        <div class="meal-macros">
+          <div class="mm">P: <span>${m.p}g</span></div>
+          <div class="mm">K: <span>${m.c}g</span></div>
+          <div class="mm">F: <span>${m.f}g</span></div>
+        </div>
+        <div class="variant-counter">
+          <div class="vc-dots">${dotsHtml}</div>
+          Variante ${idx + 1} von ${total} · Drücke "Alt." für nächste
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderAllMeals() {
+  const container = document.getElementById('meal-slots');
+  container.innerHTML = Object.keys(MEALS).map(renderMeal).join('');
+}
+
+function shuffleSlot(slot) {
+  currentIndices[slot] = pickRandom(slot, currentIndices[slot]);
+  const card = document.getElementById('card-' + slot);
+  const wasOpen = card && card.classList.contains('open');
+
+  // Replace card
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = renderMeal(slot);
+  const newCard = wrapper.firstElementChild;
+  if (wasOpen) newCard.classList.add('open');
+
+  card.classList.add('shuffling');
+  setTimeout(() => {
+    card.replaceWith(newCard);
+    updateMacroBar();
+  }, 200);
+  showToast(`${MEALS[slot].label} geändert ✓`);
+}
+
+function shuffleAll() {
+  const btn = document.getElementById('shuffleAllBtn');
+  btn.classList.add('spinning');
+  setTimeout(() => btn.classList.remove('spinning'), 500);
+
+  Object.keys(MEALS).forEach(slot => {
+    currentIndices[slot] = pickRandom(slot, currentIndices[slot]);
+  });
+  renderAllMeals();
+  updateMacroBar();
+  showToast('Neuer Tagesplan generiert ✓');
+}
+
+function toggleMeal(slot) {
+  const card = document.getElementById('card-' + slot);
+  if (card) card.classList.toggle('open');
+}
+
+function showTab(name, event) {
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (event) event.currentTarget.classList.add('active');
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// INIT
+renderAllMeals();
+updateMacroBar();
+</script>
+</body>
+</html>
